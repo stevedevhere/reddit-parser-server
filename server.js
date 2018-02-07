@@ -8,37 +8,11 @@ const fetch = require('node-fetch');
 const entities = require('html-entities').XmlEntities;
 const translate = require('google-translate-api');
 
-function handleTranslate(text, lang) {
-  return Promise.all([
-    translate(text, {from: 'en', to: lang}).then(res => {
-      return { result: res.text };
-    }).then(res => res).catch(err => {
-      return text;
-    })
-  ]).then(result => result);
-}
-
-function translator(data, lang = "") {
-  const result = data.map(item => {
-    const newItem = {};
-    for (let key in item) {
-      if (key !== 'id' && key !== 'link') {
-        handleTranslate(item[key], lang);
-      } else newItem[key] = item[key];
-    }
-    return newItem;
-  });
-  return result;
-};
-
 const getPostBySchema = async (lang, item) => {
-
-  const title = await translate(item.data.title, { from: 'en', to: lang }).then(res => res.text);
-  const description = await translate(entities.decode(item.data.selftext_html), { from: 'en', to: lang }).then(res => res.text);
   return ({
     id: item.data.name,
-    title,
-    description,
+    title: await translate(item.data.title, { from: 'en', to: lang }).then(res => res.text),
+    description: await translate(entities.decode(item.data.selftext_html), { from: 'en', to: lang }).then(res => res.text),
     link: item.data.permalink,
   });
 }
